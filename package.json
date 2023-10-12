@@ -8,5 +8,8 @@
     "express-graphql": "^0.12.0",
     "graphql": "^16.8.1",
     "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

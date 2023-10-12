@@ -1,68 +1,50 @@
-var express = require("express");
-var { graphqlHTTP } = require("express-graphql");
 var graphql = require("graphql");
 
-// Maps id to User object
-var fakeDatabase = {
-  a: {
-    id: "a",
-    name: "alice",
-  },
-  b: {
-    id: "b",
-    name: "bob",
-  },
-};
-
-// Define the User type
 var userType = new graphql.GraphQLObjectType({
   name: "User",
-  fields: {
+  fields: () => ({
     id: { type: graphql.GraphQLInt },
     name: { type: graphql.GraphQLString },
-    posts: { type: graphql.GraphQLList(postType) },
-  },
+    posts: { type: new graphql.GraphQLList(postType) },
+  }),
 });
 
 var postType = new graphql.GraphQLObjectType({
   name: "Post",
-  fields: {
+  fields: () => ({
     id: { type: graphql.GraphQLInt },
     user_id: { type: graphql.GraphQLInt },
     name: { type: graphql.GraphQLString },
     body: { type: graphql.GraphQLString },
     user: { type: userType },
-  },
+  }),
 });
 
-// Define the Query type
 var queryType = new graphql.GraphQLObjectType({
   name: "Query",
   fields: {
     users: {
       type: new graphql.GraphQLList(userType),
       resolve: (_, { id }) => {
-        return fakeDatabase[id];
+        return { id: 1, name: "test" };
       },
     },
     posts: {
       type: new graphql.GraphQLList(postType),
       resolve: (_, { id }) => {
-        return fakeDatabase[id];
+        return null;
+      },
+    },
+    helloworld: {
+      type: graphql.GraphQLString,
+      resolve: () => {
+        console.log("## RESOLVE");
+        return "Hello World!";
       },
     },
   },
 });
 
-var schema = new graphql.GraphQLSchema({ query: queryType });
+var schema = new graphql.GraphQLSchema({ query: queryType, resolve: () => {} });
 
-var app = express();
-app.use(
-  "/graphql",
-  graphqlHTTP({
-    schema: schema,
-    graphiql: true,
-  })
-);
-app.listen(3000);
-console.log("Running a GraphQL API server at localhost:4000/graphql");
+exports.schema = schema;
