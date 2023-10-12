@@ -13,4 +13,4 @@ RUN apt-get update &&\
 #     apt-get install -y ./watchman.deb &&\
 #     rm watchman.deb
 
-WORKDIR /workdir
+WORKDIR /app
