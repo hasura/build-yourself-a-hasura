@@ -1,20 +1,34 @@
 const { Client } = require("pg");
 
-async function run() {
-  const client = new Client({
-    host: "database",
-    port: 5432,
-    database: "appdb",
-    user: "dbuser",
-    password: "dbpwd",
-  });
-  await client.connect();
+class DbRunner {
+  async init() {
+    this.client = new Client({
+      host: "database",
+      port: 5432,
+      database: "appdb",
+      user: "dbuser",
+      password: "dbpwd",
+    });
+    return this.client.connect();
+  }
 
-  const res = await client.query("SELECT $1::text as message", [
-    "Hello world!",
-  ]);
-  console.log(res.rows[0].message); // Hello world!
-  await client.end();
+  async run(sql) {
+    return this.client.query(sql);
+    // console.log(res.rows[0].message); // Hello world!
+  }
+
+  async close() {
+    await this.client.end();
+  }
 }
 
-run();
+function sqlTable(table, columns) {
+  return `select ${columns.join(", ")} from ${table}`;
+}
+
+const db = new DbRunner();
+
+module.exports = {
+  db,
+  sqlTable,
+};

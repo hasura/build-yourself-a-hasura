@@ -1,4 +1,18 @@
+const { db, sqlTable } = require("./db");
 var graphql = require("graphql");
+
+async function resolve(source, args, context, info) {
+  await db.init();
+  const table = info.fieldName;
+  const columns = info.fieldNodes[0].selectionSet.selections.map(
+    (s) => s.name.value
+  );
+  const sql = await sqlTable(table, columns);
+
+  const res = (await db.run(sql)).rows;
+  await db.close();
+  return res;
+}
 
 var userType = new graphql.GraphQLObjectType({
   name: "User",
@@ -14,7 +28,7 @@ var postType = new graphql.GraphQLObjectType({
   fields: () => ({
     id: { type: graphql.GraphQLInt },
     user_id: { type: graphql.GraphQLInt },
-    name: { type: graphql.GraphQLString },
+    title: { type: graphql.GraphQLString },
     body: { type: graphql.GraphQLString },
     user: { type: userType },
   }),
@@ -25,26 +39,21 @@ var queryType = new graphql.GraphQLObjectType({
   fields: {
     users: {
       type: new graphql.GraphQLList(userType),
-      resolve: (_, { id }) => {
-        return { id: 1, name: "test" };
-      },
+      resolve,
     },
     posts: {
       type: new graphql.GraphQLList(postType),
-      resolve: (_, { id }) => {
-        return null;
-      },
+      resolve,
     },
     helloworld: {
       type: graphql.GraphQLString,
       resolve: () => {
-        console.log("## RESOLVE");
         return "Hello World!";
       },
     },
   },
 });
 
-var schema = new graphql.GraphQLSchema({ query: queryType, resolve: () => {} });
+var schema = new graphql.GraphQLSchema({ query: queryType });
 
-exports.schema = schema;
+module.exports = { schema };

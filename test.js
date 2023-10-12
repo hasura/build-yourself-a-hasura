@@ -17,3 +17,27 @@ test("execute queries against graphql schema", async () => {
   );
   expect(res.data.helloworld).toBe("Hello World!");
 });
+
+test("resolve users", async () => {
+  const res = await run(
+    `query {
+        users {
+          id
+          name
+        }
+      }`
+  );
+  console.log(JSON.stringify(res, null, 2));
+});
+
+test("resolve posts", async () => {
+  const res = await run(
+    `query {
+        posts {
+          id
+          title
+        }
+      }`
+  );
+  console.log(JSON.stringify(res, null, 2));
+});
